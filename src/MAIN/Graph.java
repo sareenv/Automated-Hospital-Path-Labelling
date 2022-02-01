@@ -1,166 +1,132 @@
 package MAIN;
 
-/*
- *
- *
- * State Based Search Algorithms.
- *    1. Uninformed Search Algorithms.
- *       a. BFS. - Done
- *           a.1 BFS - Done
- *
- *       b. Depth limited Search.
- *       c. iterative deepening.
- *       d. Uniform cost / Dijkstra's Algorithm.
- *
- *    2. Informed search Algorithms.
- *       a. hill climbing.
- *       b. best fit
- *       c. heuristic
- *       d. A*
- * */
-
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.PriorityQueue;
-import java.util.Queue;
-
-public class Graph {
-
-    static class Pair implements Comparable<Pair> {
-        int vertex;
-        String path;
-        int cost;
-
-        public Pair(int vertex ,String path, int cost) {
-            this.vertex = vertex;
-            this.path = path;
-            this.cost = cost;
-        }
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Stack;
 
 
-        @Override
-        public int compareTo(Pair o) {
-            return this.cost - o.cost;
-        }
+class Node {
+    String label;
+    Edge next;
+    ArrayList<Node> exitNodes;
+
+    public Node(Edge next, ArrayList<Node> exitNodes, String label) {
+        this.next = next;
+        this.exitNodes = exitNodes;
+        this.label = label;
     }
 
-    static int V = 9;
-
-    static class Edge {
-        int src;
-        int destination;
-        int cost;
-
-        public Edge(int src, int vertex, int cost) {
-            this.src = src;
-            this.destination = vertex;
-            this.cost = cost;
-        }
+    @Override
+    public String toString() {
+        return "Node{" +
+                "label='" + label + '\'' +
+                ", next=" + next +
+                ", exitNodes=" + exitNodes +
+                '}';
     }
-
-
-    public static ArrayList<Edge>[] buildGraph() {
-        int edgeCnt = 7;
-        ArrayList<Edge> graphs[] = new ArrayList[edgeCnt];
-
-        for (int i = 0; i< edgeCnt; i++) {
-            graphs[i] = new ArrayList<>();
-        }
-
-        graphs[0].add(new Edge(0, 1, 10));
-        graphs[0].add(new Edge(0, 3, 40));
-
-        graphs[1].add(new Edge(1, 0, 10));
-        graphs[1].add(new Edge(1, 2, 10));
-
-        graphs[2].add(new Edge(2, 3, 10));
-        graphs[2].add(new Edge(2, 1, 10));
-
-        graphs[3].add(new Edge(3, 0, 40));
-        graphs[3].add(new Edge(3, 4, 2));
-        graphs[3].add(new Edge(3, 2, 10));
-
-        graphs[4].add(new Edge(4, 5, 3));
-        graphs[4].add(new Edge(4, 6, 8));
-
-        graphs[5].add(new Edge(5, 4, 3));
-        graphs[5].add(new Edge(5, 6, 3));
-
-        graphs[6].add(new Edge(6, 4, 8));
-        graphs[6].add(new Edge(6, 5, 3));
-        return graphs;
-    }
-
-    // bfs algorithm from src to the destination.
-    public static void bfsAlgorithm(ArrayList<Edge>[] graph,  int src,
-                                    int destination, boolean[] visited) {
-        // Queue is the interface and not the actual class in the java,
-        // so we use the array deque class
-
-        Queue<Pair> queue = new ArrayDeque<>();
-        // add the src to the queue.
-
-        queue.add(new Pair(src, src + "", 0));
-
-        while (!queue.isEmpty()) {
-            // rmwa.
-            Pair p = queue.remove();
-            if (p.vertex == destination) {
-                System.out.println("Path is from " + src +
-                        " to destination " +  destination + " is " + p.path
-                        + " with cost of " + p.cost);
-                return;
-            }
-
-            if (!visited[p.vertex]) {
-                visited[p.vertex] = true;
-                for (Edge e: graph[p.vertex]) {
-                    if (!visited[e.destination]) {
-                        queue.add(new Pair(e.destination, p.path + e.destination
-                                + "", p.cost + e.cost));
-                    }
-                }
-            }
-        }
-        System.out.println("No path exist");
-    }
-
-    // find the shortest path from the src vertex to the every other vertex
-    // with the priority queue simple and easy to follow.
-    // remove mark work add.
-    public static void dijkstrasAlgorithm(ArrayList<Edge>[] graph, int src, boolean[] visited) {
-        PriorityQueue<Pair> queue = new PriorityQueue<>();
-        queue.add(new Pair(src, src + "", 0));
-
-        while (!queue.isEmpty()) {
-            Pair p = queue.poll();
-
-            if (!visited[p.vertex]) {
-                visited[p.vertex] = true;
-                System.out.println("from src 0 -> " + p.vertex +
-                        " with the cost of " + p.cost + " via path " + p.path);
-                for (Edge e: graph[p.vertex]) {
-                    if (!visited[e.destination]) {
-                        queue.add(new Pair(e.destination, p.path + e.destination,
-                                p.cost + e.cost));
-
-                    }
-                }
-            }
-        }
-    }
-
-
-    public static void main(String[] args) {
-        ArrayList<Edge>[] graph = buildGraph();
-        boolean[] visited = new boolean[graph.length];
-        bfsAlgorithm(graph, 0, 3, visited);
-        dijkstrasAlgorithm(graph, 0, visited);
-
-    }
-
 }
 
+
+class Edge {
+
+    enum EdgeDirection {Left, Right};
+
+    Node dest;
+    public Edge(Node dest) {
+        this.dest = dest;
+    }
+
+    @Override
+    public String toString() {
+        return "Edge{" +
+                "dest=" + dest +
+                '}';
+    }
+}
+
+class Graph {
+
+    HashMap<Node, ArrayList<Node>> graph;
+    private Node mainEntry;
+    private Node mainExit;
+
+    public static void visitAllRooms(Node startNode, Node endNode) {
+        HashMap<Node, Boolean> visitedNodeStatus = new HashMap<>();
+        Stack<Node> stk = new Stack<>();
+        ArrayList<Node> visitedNodes = new ArrayList<>();
+        Node currentNode = startNode;
+        StringBuilder psf = new StringBuilder();
+
+        while (currentNode != endNode) {
+            stk.add(currentNode);
+            visitedNodeStatus.put(currentNode, true);
+            psf.append(currentNode.label)
+                    .append(": left -> ")
+                    .append(currentNode.next.dest.label + " \n");
+            visitedNodes.add(currentNode);
+            currentNode = currentNode.next.dest;
+        }
+        visitedNodes.add(currentNode);
+        System.out.println(psf.toString());
+
+
+        // backtracking started.
+        Node lastNode = stk.pop();
+        /*
+            lastNode = exit node
+            [
+                C,
+                B,
+                A,
+                Entrance
+            ]
+         */
+        Node topNode = stk.peek();
+        ArrayList<Node> exitNodes = topNode.exitNodes;
+
+
+    }
+
+
+
+    public void buildGraph() {
+
+        // room exit Nodes.
+        Node r1Exit = new Node(null, null, "R1 Exist");
+        Node r2Exit = new Node(null, null, "R2 Exist");
+        Node r3Exit = new Node(null, null, "R3 Exist");
+        Node r4Exit = new Node(null, null, "R4 Exist");
+        Node r5Exit = new Node(null, null, "R5 Exist");
+        Node r6Exit = new Node(null, null, "R6 Exist");
+
+
+        Node en = new Node(null, null, "Exit Node");
+        Node r3 = new Node(new Edge(en), new ArrayList<>(Arrays.
+                asList(r5Exit, r6Exit)), "C");
+        Node r2 = new Node(new Edge(r3), new ArrayList<>(
+                Arrays.asList(r3Exit, r4Exit)
+        ), "B");
+        Node r1 = new Node(new Edge(r2), new ArrayList<>(
+                Arrays.asList(r1Exit, r2Exit)
+        ), "A");
+        Node node = new Node(new Edge(r1), null, "Main Entrance");
+        this.mainEntry = node;
+        this.mainExit = en;
+    }
+    public Graph() {
+        this.graph = new HashMap<>();
+        buildGraph();
+        visitAllRooms(this.mainEntry, mainExit);
+    }
+}
+
+class Main {
+    public static void main(String[] args) {
+        Graph graph = new Graph();
+
+    }
+}
 
 
 

@@ -1,5 +1,6 @@
 package MAIN;
 
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -8,11 +9,9 @@ import java.util.Stack;
 
 class Node {
     String label;
-    Edge next;
     ArrayList<Node> exitNodes;
 
-    public Node(Edge next, ArrayList<Node> exitNodes, String label) {
-        this.next = next;
+    public Node(ArrayList<Node> exitNodes, String label) {
         this.exitNodes = exitNodes;
         this.label = label;
     }
@@ -21,37 +20,21 @@ class Node {
     public String toString() {
         return "Node{" +
                 "label='" + label + '\'' +
-                ", next=" + next +
                 ", exitNodes=" + exitNodes +
                 '}';
     }
 }
 
 
-class Edge {
 
-    enum EdgeDirection {Left, Right};
-
-    Node dest;
-    public Edge(Node dest) {
-        this.dest = dest;
-    }
-
-    @Override
-    public String toString() {
-        return "Edge{" +
-                "dest=" + dest +
-                '}';
-    }
-}
 
 class Graph {
 
     HashMap<Node, ArrayList<Node>> graph;
-    private Node mainEntry;
-    private Node mainExit;
+    Node mainEntry;
+    Node mainExit;
 
-    public static void visitAllRooms(Node startNode, Node endNode) {
+    public void visitAllRooms(Node startNode, Node endNode) {
         HashMap<Node, Boolean> visitedNodeStatus = new HashMap<>();
         Stack<Node> stk = new Stack<>();
         ArrayList<Node> visitedNodes = new ArrayList<>();
@@ -61,31 +44,28 @@ class Graph {
         while (currentNode != endNode) {
             stk.add(currentNode);
             visitedNodeStatus.put(currentNode, true);
-            psf.append(currentNode.label)
-                    .append(": left -> ")
-                    .append(currentNode.next.dest.label + " \n");
+            psf
+                .append(currentNode.label + " -> ")
+                .append(this.graph.get(currentNode).get(0).label + " using left direction \n");
             visitedNodes.add(currentNode);
-            currentNode = currentNode.next.dest;
+            currentNode = this.graph.get(currentNode).get(0);
         }
         visitedNodes.add(currentNode);
         System.out.println(psf.toString());
 
-
         // backtracking started.
         Node lastNode = stk.pop();
-        /*
-            lastNode = exit node
-            [
-                C,
-                B,
-                A,
-                Entrance
-            ]
-         */
         Node topNode = stk.peek();
         ArrayList<Node> exitNodes = topNode.exitNodes;
 
-
+        for(Node exitNode: exitNodes) {
+            ArrayList lst = this.graph.get(topNode);
+            lst.add(exitNode);
+            System.out.println("the list is " + lst);
+            this.graph.put(lastNode, lst);
+        }
+        System.out.println(this.graph.get(exitNodes));
+        System.out.println(this.mainExit);
     }
 
 
@@ -93,38 +73,44 @@ class Graph {
     public void buildGraph() {
 
         // room exit Nodes.
-        Node r1Exit = new Node(null, null, "R1 Exist");
-        Node r2Exit = new Node(null, null, "R2 Exist");
-        Node r3Exit = new Node(null, null, "R3 Exist");
-        Node r4Exit = new Node(null, null, "R4 Exist");
-        Node r5Exit = new Node(null, null, "R5 Exist");
-        Node r6Exit = new Node(null, null, "R6 Exist");
+        Node r1Exit = new Node( null, "R1 Exist");
+        Node r2Exit = new Node( null, "R2 Exist");
+        Node r3Exit = new Node( null, "R3 Exist");
+        Node r4Exit = new Node( null, "R4 Exist");
+        Node r5Exit = new Node( null, "R5 Exist");
+        Node r6Exit = new Node( null, "R6 Exist");
 
-
-        Node en = new Node(null, null, "Exit Node");
-        Node r3 = new Node(new Edge(en), new ArrayList<>(Arrays.
+        Node en = new Node( null, "Exit Node");
+        Node r3 = new Node(new ArrayList<>(Arrays.
                 asList(r5Exit, r6Exit)), "C");
-        Node r2 = new Node(new Edge(r3), new ArrayList<>(
+        Node r2 = new Node(new ArrayList<>(
                 Arrays.asList(r3Exit, r4Exit)
         ), "B");
-        Node r1 = new Node(new Edge(r2), new ArrayList<>(
+        Node r1 = new Node( new ArrayList<>(
                 Arrays.asList(r1Exit, r2Exit)
         ), "A");
-        Node node = new Node(new Edge(r1), null, "Main Entrance");
-        this.mainEntry = node;
+
+        Node entryNode = new Node(null, "Main Entrance");
+
+        this.graph.put(entryNode, new ArrayList<>(Arrays.asList(r1)));
+        this.graph.put(r1, new ArrayList<>(Arrays.asList(r2)));
+        this.graph.put(r2, new ArrayList<>(Arrays.asList(r3)));
+        this.graph.put(r3, new ArrayList<>(Arrays.asList(en)));
+        this.graph.put(en, new ArrayList<>());
+
+        this.mainEntry = entryNode;
         this.mainExit = en;
     }
     public Graph() {
         this.graph = new HashMap<>();
         buildGraph();
-        visitAllRooms(this.mainEntry, mainExit);
     }
 }
 
 class Main {
     public static void main(String[] args) {
         Graph graph = new Graph();
-
+        graph.visitAllRooms(graph.mainEntry, graph.mainExit);
     }
 }
 

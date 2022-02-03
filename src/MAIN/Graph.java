@@ -109,8 +109,8 @@ class Graph {
                     this.graph.put(y, new ArrayList<>(Arrays.asList(
                             current.currentNode
                     )));
-                    exitPath1.append("down\n");
-                    exitPath2.append("up\n");
+                    exitPath1.append("down\nright\n");
+                    exitPath2.append("up\nright\n");
                     break;
                 }
 
@@ -136,12 +136,12 @@ class Graph {
                 if (cx != null) {
 
                     next.add(cx);
-                    exitPath1.append("up\n");
+                    exitPath1.append("up\nright\n");
                     x = cx;
                 }
                 if (cy != null) {
                     next.add(cy);
-                    exitPath2.append("down\n");
+                    exitPath2.append("down\nright\n");
                     y = cy;
                 }
                 this.graph.put(top.currentNode, next);

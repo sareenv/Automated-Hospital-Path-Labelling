@@ -1,10 +1,7 @@
 package MAIN;
 
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Stack;
+import java.util.*;
 
 
 class Node {
@@ -26,6 +23,30 @@ class Node {
 }
 
 
+class Pair {
+    String direction;
+    String destinationNode;
+    Node currentNode;
+
+
+    public Pair(String direction,
+                Node currentNode,
+                String destination) {
+        this.direction = direction;
+        this.destinationNode = destination;
+        this.currentNode = currentNode;
+
+    }
+
+    @Override
+    public String toString() {
+        return "Pair{" +
+                "direction='" + direction + '\'' +
+                ", destinationNode='" + destinationNode + '\'' +
+                ", currentNode=" + currentNode +
+                '}';
+    }
+}
 
 
 class Graph {
@@ -35,37 +56,93 @@ class Graph {
     Node mainExit;
 
     public void visitAllRooms(Node startNode, Node endNode) {
-        HashMap<Node, Boolean> visitedNodeStatus = new HashMap<>();
-        Stack<Node> stk = new Stack<>();
+        Stack<Pair> stk = new Stack<>();
         ArrayList<Node> visitedNodes = new ArrayList<>();
         Node currentNode = startNode;
-        StringBuilder psf = new StringBuilder();
 
         while (currentNode != endNode) {
-            stk.add(currentNode);
-            visitedNodeStatus.put(currentNode, true);
-            psf
-                .append(currentNode.label + " -> ")
-                .append(this.graph.get(currentNode).get(0).label + " using left direction \n");
+
+
+            Pair p = new Pair("l",
+                    currentNode,
+                    this.graph.get(currentNode).get(0).label);
+
+            stk.add(p);
             visitedNodes.add(currentNode);
             currentNode = this.graph.get(currentNode).get(0);
         }
         visitedNodes.add(currentNode);
-        System.out.println(psf.toString());
-
-        // backtracking started.
-        Node lastNode = stk.pop();
-        Node topNode = stk.peek();
-        ArrayList<Node> exitNodes = topNode.exitNodes;
-
-        for(Node exitNode: exitNodes) {
-            ArrayList lst = this.graph.get(topNode);
-            lst.add(exitNode);
-            System.out.println("the list is " + lst);
-            this.graph.put(lastNode, lst);
+        Pair tempPair = new Pair("",
+                currentNode,
+                "");
+        stk.add(tempPair);
+        // print the nodes until the sink.
+        for (Node node : visitedNodes) {
+            System.out.println(node.label);
         }
-        System.out.println(this.graph.get(exitNodes));
-        System.out.println(this.mainExit);
+
+        /*
+         * Backtracking
+         * Top Element;
+         * */
+        while (true) {
+            Pair top = stk.pop();
+            Pair current = stk.peek();
+
+            Node x = null;
+            Node y = null;
+
+            ArrayList<Node> next = this.graph.get(top.currentNode);
+
+            if (top.currentNode.exitNodes != null) {
+                x = top.currentNode;
+                y = top.currentNode;
+                Node cx;
+                Node cy;
+
+                // reached to the main entrance again.
+
+                if (current.currentNode.exitNodes == null) {
+                    System.out.println("Reached back to the main entrance again");
+                    this.graph.put(x,  new ArrayList<>
+                            (Arrays.asList(current.currentNode)));
+                    this.graph.put(y, new ArrayList<>(Arrays.asList(
+                            current.currentNode
+                    )));
+                    break;
+                }
+
+                cx = current.currentNode.exitNodes.get(0);
+                cy = current.currentNode.exitNodes.get(1);
+
+                if (cx != null) {
+                    next.add(cx);
+                    System.out.println( "g -> " + cx.label);
+                    x = cx;
+                }
+                if (cy != null) {
+                    System.out.println("r -> " + cy.label);
+                    next.add(cy);
+                    y = cy;
+                }
+                this.graph.put(top.currentNode, next);
+
+            } else {
+
+                Node cx = current.currentNode.exitNodes.get(0);
+                Node cy = current.currentNode.exitNodes.get(1);
+                if (cx != null) {
+                    next.add(cx);
+                    x = cx;
+                }
+                if (cy != null) {
+                    next.add(cy);
+                    y = cy;
+                }
+                this.graph.put(top.currentNode, next);
+            }
+
+        }
     }
 
 
@@ -73,12 +150,12 @@ class Graph {
     public void buildGraph() {
 
         // room exit Nodes.
-        Node r1Exit = new Node( null, "R1 Exist");
-        Node r2Exit = new Node( null, "R2 Exist");
-        Node r3Exit = new Node( null, "R3 Exist");
-        Node r4Exit = new Node( null, "R4 Exist");
-        Node r5Exit = new Node( null, "R5 Exist");
-        Node r6Exit = new Node( null, "R6 Exist");
+        Node r1Exit = new Node( null, "R1 Exit");
+        Node r2Exit = new Node( null, "R2 Exit");
+        Node r3Exit = new Node( null, "R3 Exit");
+        Node r4Exit = new Node( null, "R4 Exit");
+        Node r5Exit = new Node( null, "R5 Exit");
+        Node r6Exit = new Node( null, "R6 Exit");
 
         Node en = new Node( null, "Exit Node");
         Node r3 = new Node(new ArrayList<>(Arrays.

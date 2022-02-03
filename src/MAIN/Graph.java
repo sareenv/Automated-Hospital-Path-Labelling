@@ -81,8 +81,6 @@ class Graph {
         StringBuilder exitPath1 = new StringBuilder();
         StringBuilder exitPath2 = new StringBuilder();
 
-        exitPath1.append("up\n");
-        exitPath2.append("down\n");
 
         /*
          * Backtracking
@@ -105,11 +103,14 @@ class Graph {
 
                 // reached to the main entrance again.
                 if (current.currentNode.exitNodes == null) {
+
                     this.graph.put(x,  new ArrayList<>
                             (Arrays.asList(current.currentNode)));
                     this.graph.put(y, new ArrayList<>(Arrays.asList(
                             current.currentNode
                     )));
+                    exitPath1.append("down\n");
+                    exitPath2.append("up\n");
                     break;
                 }
 
@@ -123,20 +124,24 @@ class Graph {
                 }
 
                 if (cy != null) {
-                    exitPath1.append("right\n");
                     next.add(cy);
+                    exitPath2.append("right\n");
                     y = cy;
                 }
                 this.graph.put(top.currentNode, next);
+
             } else {
                 Node cx = current.currentNode.exitNodes.get(0);
                 Node cy = current.currentNode.exitNodes.get(1);
                 if (cx != null) {
+
                     next.add(cx);
+                    exitPath1.append("up\n");
                     x = cx;
                 }
                 if (cy != null) {
                     next.add(cy);
+                    exitPath2.append("down\n");
                     y = cy;
                 }
                 this.graph.put(top.currentNode, next);

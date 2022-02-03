@@ -58,17 +58,18 @@ class Graph {
     public void visitAllRooms(Node startNode, Node endNode) {
         Stack<Pair> stk = new Stack<>();
         ArrayList<Node> visitedNodes = new ArrayList<>();
+        StringBuilder sinkPath = new StringBuilder();
         Node currentNode = startNode;
 
+
         while (currentNode != endNode) {
-
-
-            Pair p = new Pair("l",
+            Pair p = new Pair("left",
                     currentNode,
                     this.graph.get(currentNode).get(0).label);
 
             stk.add(p);
             visitedNodes.add(currentNode);
+            sinkPath.append("left\n");
             currentNode = this.graph.get(currentNode).get(0);
         }
         visitedNodes.add(currentNode);
@@ -76,10 +77,12 @@ class Graph {
                 currentNode,
                 "");
         stk.add(tempPair);
-        // print the nodes until the sink.
-        for (Node node : visitedNodes) {
-            System.out.println(node.label);
-        }
+
+        StringBuilder exitPath1 = new StringBuilder();
+        StringBuilder exitPath2 = new StringBuilder();
+
+        exitPath1.append("up\n");
+        exitPath2.append("down\n");
 
         /*
          * Backtracking
@@ -101,9 +104,7 @@ class Graph {
                 Node cy;
 
                 // reached to the main entrance again.
-
                 if (current.currentNode.exitNodes == null) {
-                    System.out.println("Reached back to the main entrance again");
                     this.graph.put(x,  new ArrayList<>
                             (Arrays.asList(current.currentNode)));
                     this.graph.put(y, new ArrayList<>(Arrays.asList(
@@ -117,18 +118,17 @@ class Graph {
 
                 if (cx != null) {
                     next.add(cx);
-                    System.out.println( "g -> " + cx.label);
+                    exitPath1.append("right\n");
                     x = cx;
                 }
+
                 if (cy != null) {
-                    System.out.println("r -> " + cy.label);
+                    exitPath1.append("right\n");
                     next.add(cy);
                     y = cy;
                 }
                 this.graph.put(top.currentNode, next);
-
             } else {
-
                 Node cx = current.currentNode.exitNodes.get(0);
                 Node cy = current.currentNode.exitNodes.get(1);
                 if (cx != null) {
@@ -141,8 +141,12 @@ class Graph {
                 }
                 this.graph.put(top.currentNode, next);
             }
-
         }
+        System.out.println("Labelled first exit path as " +
+                "is \n" + sinkPath.toString() + exitPath1.toString());
+
+        System.out.println("Labelled second exit path as " +
+                "is \n" + sinkPath.toString() + exitPath2.toString());
     }
 
 

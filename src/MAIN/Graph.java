@@ -1,6 +1,8 @@
 package MAIN;
 
 
+import javafx.scene.effect.Effect;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
@@ -204,6 +206,14 @@ class Main {
             this.name = name;
             this.rooms = rooms;
         }
+
+        @Override
+        public String toString() {
+            return "Node \n" +
+                    "name='" + name + '\'' +
+                    ", rooms=" + rooms +
+                    '}' + '\n';
+        }
     }
 
     enum Directions {East, West, North, South};
@@ -231,12 +241,49 @@ class Main {
                     break;
             }
         }
+
+        @Override
+        public String toString() {
+            return "Edge{\n" +
+                    "src=" + src +
+                    ", destinations=" + destinations +
+                    ", direction=" + direction +
+                    '}';
+        }
+    }
+
+
+
+        public static void hamiltonionPath(HashMap<Node, ArrayList<Edge>> graph, Node src,
+                                           HashSet<Node> visited,
+                                       String psf, ArrayList<String> cache) {
+        if (visited.size() == graph.size() - 1) {
+            cache.add(psf);
+            return;
+        }
+        visited.add(src);
+
+        ArrayList<Edge> edges = graph.get(src);
+
+        if (edges == null) {
+            System.out.println("Edge is null");
+            return;
+        }
+
+        for (Edge e: edges) {
+
+            if (!visited.contains(e.destinations)) {
+                hamiltonionPath(graph, e.destinations, visited,
+                        psf + e.destinations, cache);
+            }
+        }
+        visited.remove(src);
     }
 
 
     public static void main(String[] args) {
-        ArrayList<String> enteredNodes = new ArrayList<>();
-        ArrayList<Node> nodes = new ArrayList<>();
+        HashMap<Node, ArrayList<Edge>> graph = new HashMap<>();
+        HashSet<Node> nodes = new HashSet<>();
         ArrayList<Edge> edges = new ArrayList<>();
         Scanner snc = null;
         try {
@@ -250,16 +297,8 @@ class Main {
                 String line = snc.nextLine();
                 String[] vals = line.split(",");
                 Node v1 = new Node(vals[0], new ArrayList<>());
-                Node v2 = new Node(vals[0], new ArrayList<>());
-               if (!enteredNodes.contains(v1.name)) {
-                   nodes.add(v1);
-                   enteredNodes.add(v1.name);
-               } else if (!enteredNodes.contains(v2.name)) {
-                   nodes.add(v2);
-                   enteredNodes.add(v2.name);
-               }
-               Edge edge  = new Edge(v1, v2, vals[3]);
-               edges.add(edge);
+                Node v2 = new Node(vals[1], new ArrayList<>());
+
             }
         } catch (Exception e) {
             System.out.println(e.toString());
@@ -269,12 +308,16 @@ class Main {
             }
         }
 
-        for (Node node: nodes) {
-            System.out.println("Nodes : "
-                    + node.name);
+
+
+//        Node srcNode = (Node) graph.keySet().toArray()[0];
+//        HashSet<Node> visited = new HashSet<>();
+//        System.out.println();
+//        hamiltonionPath(graph, srcNode, visited, srcNode.name + "", new ArrayList<>());
+
+        for (Node n: nodes) {
+            System.out.println("Node is " + n.name);
         }
-
-
 
     }
 }

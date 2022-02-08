@@ -260,9 +260,13 @@ public class Gr {
         HashSet<Integer> visited = new HashSet<>();
         ArrayList<String> cache = new ArrayList<>();
         int[] order = new int[graph.length];
+        // function for the graph complete orientations using the hamiltonion Paths.
         hamiltonionPath(graph, 0, visited, 0 + "", cache, order, 0);
-        ArrayList<NodePair> uniquePairs = new ArrayList<>();
 
+        System.out.println("Unique complete graph orientations are " + cache);
+
+
+        ArrayList<NodePair> uniquePairs = new ArrayList<>();
         for (String path: cache) {
             for (int i = 0; i < path.length() - 1; i++) {
                 char c1 = path.charAt(i);

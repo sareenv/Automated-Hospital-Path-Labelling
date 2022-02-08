@@ -167,47 +167,114 @@ public class Gr {
 
 
     public static void hamiltonionPath(ArrayList<Edge>[] graph, int src, HashSet<Integer> visited,
-                                       String psf, ArrayList<String> cache) {
+                                       String psf,
+                                       ArrayList<String> cache, int[] order, int prevOrder) {
         if (visited.size() == graph.length - 1) {
             cache.add(psf);
             return;
         }
         visited.add(src);
+
+        if (src == 0) {
+            order[src] = 1;
+        } else {
+            order[src] = order[src - 1] + 1;
+        }
+
         for (Edge e: graph[src]) {
             if (!visited.contains(e.destination)) {
                 hamiltonionPath(graph, e.destination, visited,
-                        psf + e.destination, cache);
+                          psf + e.destination, cache, order, prevOrder + 1);
             }
         }
         visited.remove(src);
     }
+
+    static class NodePair {
+        char nodeA;
+        char nodeB;
+        Edge edge;
+
+        public NodePair(char nodeA, char nodeB) {
+            this.nodeA = nodeA;
+            this.nodeB = nodeB;
+            this.edge = null;
+        }
+
+        public NodePair(char nodeA, char nodeB, Edge edge) {
+            this.nodeA = nodeA;
+            this.nodeB = nodeB;
+            this.edge = edge;
+        }
+
+        @Override
+        public String toString() {
+            return "NodePair{" +
+                    "nodeA=" + nodeA +
+                    ", nodeB=" + nodeB +
+                    ", edge=" + edge +
+                    '}';
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            NodePair pair = (NodePair) o;
+            return nodeA == pair.nodeA && nodeB == pair.nodeB
+                     && Objects.equals(edge, pair.edge);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(nodeA, nodeB, edge);
+        }
+    }
+
+
+    // one way edge labelling.
+    public static void labellingLogic(ArrayList<NodePair> uniquePairs, int[] order) {
+        ArrayList<String> visitedNodes = new ArrayList<>();
+        for (NodePair pair: uniquePairs) {
+            // wrong way of doing the labelling just based on the order of the nodes
+            // and not considering the visited nodes to flip the signs in the process to doing it.
+            int nodeAInt = Integer.parseInt(pair.nodeA + "");
+            int nodeBInt = Integer.parseInt(pair.nodeB + "");
+            if (order[nodeAInt] < order[nodeBInt] &&
+                    !visitedNodes.contains(pair.nodeB + "")) {
+                System.out.println(nodeAInt + " -> " + nodeBInt);
+                visitedNodes.add(pair.nodeB + "");
+                visitedNodes.add(pair.nodeA + "");
+
+            } else if (order[nodeAInt] < order[nodeBInt]
+                    && visitedNodes.contains(pair.nodeB + "")){
+                System.out.println(nodeBInt + " -> " + nodeAInt);
+            }
+        }
+    }
+
 
 
     public static void main(String[] args) {
         ArrayList<Edge>[] graph = buildGraph();
         HashSet<Integer> visited = new HashSet<>();
         ArrayList<String> cache = new ArrayList<>();
-        hamiltonionPath(graph, 0, visited, 0 + "", cache);
-        StringBuilder builder = new StringBuilder();
-        HashSet<String> directionsSet = new HashSet<>();
+        int[] order = new int[graph.length];
+        hamiltonionPath(graph, 0, visited, 0 + "", cache, order, 0);
+        ArrayList<NodePair> uniquePairs = new ArrayList<>();
+
         for (String path: cache) {
-            System.out.println(path);
-            HashSet<Integer> set = new HashSet<>();
-
-            for (int i = 0; i< path.length() - 1; i++) {
-                int vq = Integer.parseInt(path.charAt(i) + "");
-                int vs = Integer.parseInt(path.charAt(i + 1) + "");
-                System.out.println(vs);
+            for (int i = 0; i < path.length() - 1; i++) {
+                char c1 = path.charAt(i);
+                char c2 = path.charAt(i + 1);
+                NodePair pair = new NodePair(c1, c2);
+                if (!uniquePairs.contains(pair)) {
+                    uniquePairs.add(pair);
+                }
             }
-            String result = builder.toString();
-            directionsSet.add(result);
         }
-        
-        for (String s: directionsSet) {
-            System.out.println(s);
-        }
+        labellingLogic(uniquePairs, order);
     }
-
 }
 
 

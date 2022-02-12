@@ -249,6 +249,8 @@ public class Gr {
             } else if (order[nodeAInt] < order[nodeBInt]
                     && visitedNodes.contains(pair.nodeB + "")){
                 System.out.println(nodeBInt + " -> " + nodeAInt);
+            } else {
+                System.out.println("yest");
             }
         }
     }
@@ -264,7 +266,6 @@ public class Gr {
         hamiltonionPath(graph, 0, visited, 0 + "", cache, order, 0);
 
         System.out.println("Unique complete graph orientations are " + cache);
-
 
         ArrayList<NodePair> uniquePairs = new ArrayList<>();
         for (String path: cache) {

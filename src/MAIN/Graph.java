@@ -5,6 +5,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
 
+
+
+
 class Graph {
 
     static class Edge {
@@ -70,6 +73,30 @@ class Graph {
         snc.close();
     }
 
+
+
+    /*
+    * Is graph connected.
+    * */
+
+    boolean isGraphConnected() {
+        ArrayList<Object> result = printPathAugmentation();
+        ArrayList<String> cachePath = (ArrayList<String>) result.get(0);
+        if (cachePath.size() == 0) { return false; }
+        return true;
+    }
+
+    /*
+    *  - Bridge Detection Algorithms for the graph.
+    *       - To detect if the bridge exist or not in the graph remove one
+    *           edge and check if the graph is still connected or not.
+    * */
+
+    public boolean bridgeDetector(ArrayList<Edge>[] graph) {
+        return false;
+    }
+
+
     public void printGraph() {
         for (int i = 0; i< this.vertices.size(); i++) {
             System.out.println( i + ": " + Arrays.toString(graph[i].toArray()));
@@ -127,26 +154,19 @@ class Graph {
     static class AugmentedPair {
         char nodeA;
         char nodeB;
-        Gr.Edge edge;
+
 
         public AugmentedPair(char nodeA, char nodeB) {
             this.nodeA = nodeA;
             this.nodeB = nodeB;
-            this.edge = null;
         }
 
-        public AugmentedPair(char nodeA, char nodeB, Gr.Edge edge) {
-            this.nodeA = nodeA;
-            this.nodeB = nodeB;
-            this.edge = edge;
-        }
 
         @Override
         public String toString() {
             return "AugmentedPair{" +
                     "nodeA=" + nodeA +
                     ", nodeB=" + nodeB +
-                    ", edge=" + edge +
                     '}';
         }
 
@@ -155,13 +175,12 @@ class Graph {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             AugmentedPair pair = (AugmentedPair) o;
-            return nodeA == pair.nodeA && nodeB == pair.nodeB
-                    && Objects.equals(edge, pair.edge);
+            return nodeA == pair.nodeA && nodeB == pair.nodeB;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(nodeA, nodeB, edge);
+            return Objects.hash(nodeA, nodeB);
         }
     }
 
@@ -225,6 +244,11 @@ class Graph {
             // path augmentation shows that there
             // exist a path between src vertex
             // to all the other vertex which shows that the graph is connected !.
+            if (!g.isGraphConnected()) {
+                System.out.println("Sorry this graph is not connected and " +
+                        "therefore cannot be labelled by algorithm for one way street problem");
+                return;
+            }
             ArrayList<Object> objs = g.printPathAugmentation();
             int[] order = (int[]) objs.get(1);
             ArrayList<String> cache = (ArrayList<String>) objs.get(0);

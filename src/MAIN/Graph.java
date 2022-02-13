@@ -46,7 +46,7 @@ class Graph {
 
     public void loadContent() throws FileNotFoundException {
         String path = "/Users/databunker/IdeaProjects/HospitalPathLabelling/src/MAIN";
-        String fileName = "/Contents3.txt";
+        String fileName = "/Contents2.txt";
         String overAllPath = path + fileName;
         File file = new File(overAllPath);
         Scanner snc = new Scanner(file);

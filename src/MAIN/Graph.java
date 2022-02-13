@@ -112,11 +112,11 @@ class Graph {
 
 
         if (visited.size() == 5) {
-            visited.remove(0);
+            visited.remove(ss);
         }
 
         if (visited.size() == this.graph.length - 1) {
-            order[src] = order[src - 1] + 1;
+            order[src] = order[prevOrder - 1] + 1;
             System.out.println(Arrays.toString(order));
             cache.add(psf);
             return;

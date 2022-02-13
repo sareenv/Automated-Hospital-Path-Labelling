@@ -44,9 +44,10 @@ class Graph {
         this.graph[src].add(edge);
     }
 
-    public void loadContent() throws FileNotFoundException {
+    public void loadContent(int fileNumber) throws FileNotFoundException {
         String path = "/Users/databunker/IdeaProjects/HospitalPathLabelling/src/MAIN";
-        String fileName = "/Contents2.txt";
+        String fileName = "/Contents" + fileNumber + ".txt";
+        System.out.println(fileName);
         String overAllPath = path + fileName;
         File file = new File(overAllPath);
         Scanner snc = new Scanner(file);
@@ -104,13 +105,19 @@ class Graph {
     }
 
     // generates the hamiltonian path from the src vertex to the destination vertex.
-    public void pathsAugmentation(ArrayList<Edge>[] graph, int src, HashSet<Integer> visited,
+    public void pathsAugmentation(ArrayList<Edge>[] graph, int ss, int src, HashSet<Integer> visited,
                                   String psf,
                                   ArrayList<String> cache,
                                   int[] order, int prevOrder) {
-        if (visited.size()
-                == graph.length - 1) {
-            order[src] = order[prevOrder - 1] + 1;
+
+
+        if (visited.size() == 5) {
+            visited.remove(0);
+        }
+
+        if (visited.size() == this.graph.length - 1) {
+            order[src] = order[src - 1] + 1;
+            System.out.println(Arrays.toString(order));
             cache.add(psf);
             return;
         }
@@ -124,7 +131,7 @@ class Graph {
 
         for (Edge e: graph[src]) {
             if (!visited.contains(e.dest)) {
-                pathsAugmentation(graph, e.dest, visited,
+                pathsAugmentation(graph, ss, e.dest, visited,
                         psf + e.dest, cache, order, prevOrder + 1);
             }
         }
@@ -139,8 +146,9 @@ class Graph {
         HashSet<Integer> visited = new HashSet<>();
         ArrayList<String> cache = new ArrayList<>();
         int[] order = new int[g.vertices.size()];
-        g.pathsAugmentation(g.graph, 0, visited,  0 + "",
+        g.pathsAugmentation(g.graph, 0, 0,visited,  0 + "",
                 cache , order, 0);
+
         for (String p: cache) {
             System.out.println(p);
         }
@@ -236,10 +244,12 @@ class Graph {
         System.out.println("Please enter the vertex count in the source file");
         Scanner snc = new Scanner(System.in);
         int graphCount = snc.nextInt();
+        System.out.println("Please enter the file number to load the data from ");
+        int fileNumber = snc.nextInt();
         snc.close();
         Graph g = new Graph(graphCount);
         try {
-            g.loadContent();
+            g.loadContent(fileNumber);
             g.printGraph();
             // path augmentation shows that there
             // exist a path between src vertex

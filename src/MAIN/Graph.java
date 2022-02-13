@@ -43,7 +43,7 @@ class Graph {
 
     public void loadContent() throws FileNotFoundException {
         String path = "/Users/databunker/IdeaProjects/HospitalPathLabelling/src/MAIN";
-        String fileName = "/Contents2.txt";
+        String fileName = "/Contents3.txt";
         String overAllPath = path + fileName;
         File file = new File(overAllPath);
         Scanner snc = new Scanner(file);
@@ -83,6 +83,7 @@ class Graph {
                                   int[] order, int prevOrder) {
         if (visited.size()
                 == graph.length - 1) {
+            order[src] = order[prevOrder - 1] + 1;
             cache.add(psf);
             return;
         }
@@ -167,25 +168,31 @@ class Graph {
 
     // labelling Algorithm - Works based on the logic mentioned in the book.
     public static void labellingLogic(ArrayList<AugmentedPair> uniquePairs, int[] order) {
-        ArrayList<String> visitedNodes = new ArrayList<>();
+        ArrayList<AugmentedPair> visitedEdges = new ArrayList<>();
+        HashSet<String> visitedVertices = new HashSet<>();
+
         for (AugmentedPair pair: uniquePairs) {
-            // wrong way of doing the labelling just based on the order of the nodes
-            // and not considering the visited nodes to flip the signs in the process to doing it.
+            // skip if the edge has been already marked.
+            if (visitedEdges.contains(pair)) {
+                continue;
+            }
+
             int nodeAInt = Integer.parseInt(pair.nodeA + "");
             int nodeBInt = Integer.parseInt(pair.nodeB + "");
-            if (order[nodeAInt] < order[nodeBInt] &&
-                    !visitedNodes.contains(pair.nodeB + "")) {
-                System.out.println(nodeAInt + " -> " + nodeBInt);
-                visitedNodes.add(pair.nodeB + "");
-                visitedNodes.add(pair.nodeA + "");
 
-            } else if (order[nodeAInt] < order[nodeBInt]
-                    && visitedNodes.contains(pair.nodeB + "")){
-                System.out.println(nodeBInt + " -> " + nodeAInt);
+            if(order[nodeAInt] < order[nodeBInt] &&
+                    !visitedVertices.contains(nodeBInt + "")) {
+                System.out.println(nodeAInt + " -> " + nodeBInt);
+                visitedEdges.add(pair);
+                visitedVertices.add(nodeBInt + "");
+                visitedVertices.add(nodeAInt + "");
             }
-            // consider the logic change here in this area.
-            else {
+
+            else if (order[nodeAInt] < order[nodeBInt]
+                    && visitedVertices.contains(nodeBInt + "")) {
                 System.out.println(nodeBInt + " -> " + nodeAInt);
+                visitedEdges.add(pair);
+                visitedVertices.add(nodeAInt + "");
             }
         }
     }
@@ -207,7 +214,11 @@ class Graph {
     }
 
     public static void main(String[] args) {
-        Graph g = new Graph(4);
+        System.out.println("Please enter the vertex count in the source file");
+        Scanner snc = new Scanner(System.in);
+        int graphCount = snc.nextInt();
+        snc.close();
+        Graph g = new Graph(graphCount);
         try {
             g.loadContent();
             g.printGraph();

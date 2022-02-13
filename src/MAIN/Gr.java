@@ -1,6 +1,7 @@
 package MAIN;
 
 
+import javax.xml.soap.Node;
 import java.util.*;
 
 public class Gr {
@@ -191,17 +192,17 @@ public class Gr {
     }
 
     static class NodePair {
-        char nodeA;
-        char nodeB;
+        String nodeA;
+        String nodeB;
         Edge edge;
 
-        public NodePair(char nodeA, char nodeB) {
+        public NodePair(String nodeA, String nodeB) {
             this.nodeA = nodeA;
             this.nodeB = nodeB;
             this.edge = null;
         }
 
-        public NodePair(char nodeA, char nodeB, Edge edge) {
+        public NodePair(String nodeA, String nodeB, Edge edge) {
             this.nodeA = nodeA;
             this.nodeB = nodeB;
             this.edge = edge;
@@ -234,23 +235,31 @@ public class Gr {
 
     // one way edge labelling.
     public static void labellingLogic(ArrayList<NodePair> uniquePairs, int[] order) {
-        ArrayList<String> visitedNodes = new ArrayList<>();
+        ArrayList<NodePair> visitedEdges = new ArrayList<>();
+        HashSet<String> visitedVertices = new HashSet<>();
+
         for (NodePair pair: uniquePairs) {
-            // wrong way of doing the labelling just based on the order of the nodes
-            // and not considering the visited nodes to flip the signs in the process to doing it.
+            // skip if the edge has been already marked.
+            if (visitedEdges.contains(pair)) {
+                continue;
+            }
+
             int nodeAInt = Integer.parseInt(pair.nodeA + "");
             int nodeBInt = Integer.parseInt(pair.nodeB + "");
-            if (order[nodeAInt] < order[nodeBInt] &&
-                    !visitedNodes.contains(pair.nodeB + "")) {
-                System.out.println(nodeAInt + " -> " + nodeBInt);
-                visitedNodes.add(pair.nodeB + "");
-                visitedNodes.add(pair.nodeA + "");
 
-            } else if (order[nodeAInt] < order[nodeBInt]
-                    && visitedNodes.contains(pair.nodeB + "")){
+            if(order[nodeAInt] < order[nodeBInt] &&
+                    !visitedVertices.contains(nodeBInt + "")) {
+                System.out.println(nodeAInt + " -> " + nodeBInt);
+                visitedEdges.add(pair);
+                visitedVertices.add(nodeBInt + "");
+                visitedVertices.add(nodeAInt + "");
+            }
+
+            else if (order[nodeAInt] < order[nodeBInt]
+                    && visitedVertices.contains(nodeBInt + "")) {
                 System.out.println(nodeBInt + " -> " + nodeAInt);
-            } else {
-                System.out.println("yest");
+                visitedEdges.add(pair);
+                visitedVertices.add(nodeAInt + "");
             }
         }
     }
@@ -272,7 +281,7 @@ public class Gr {
             for (int i = 0; i < path.length() - 1; i++) {
                 char c1 = path.charAt(i);
                 char c2 = path.charAt(i + 1);
-                NodePair pair = new NodePair(c1, c2);
+                NodePair pair = new NodePair(c1 + "", c2 + "");
                 if (!uniquePairs.contains(pair)) {
                     uniquePairs.add(pair);
                 }

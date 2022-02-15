@@ -6,8 +6,6 @@ import java.io.FileNotFoundException;
 import java.util.*;
 
 
-
-
 class Graph {
 
     static class Edge {
@@ -104,37 +102,52 @@ class Graph {
         }
     }
 
+    static int k = 0;
     // generates the hamiltonian path from the src vertex to the destination vertex.
-    public void pathsAugmentation(ArrayList<Edge>[] graph, int ss, int src, HashSet<Integer> visited,
+    public void pathsAugmentation(ArrayList<Edge>[] graph, int ss,
+                                  int src, HashSet<Integer> visited,
                                   String psf,
                                   ArrayList<String> cache,
-                                  int[] order, int prevOrder) {
+                                  int[] order, int currentOrder
+                                  , ArrayList<Integer> ssp) {
 
-
-        if (visited.size() == 5) {
-            visited.remove(ss);
-        }
-
-        if (visited.size() == this.graph.length - 1) {
-            order[src] = order[prevOrder - 1] + 1;
+        if (ssp.size() == this.graph.length - 1) {
             System.out.println(Arrays.toString(order));
+            if (order[src] == - 1) {
+                order[src] = currentOrder + 1;
+            }
             cache.add(psf);
             return;
         }
+
         visited.add(src);
 
         if (src == 0) {
-            order[src] = 1;
+            currentOrder = 1;
+            if (order[src] == -1 ) {
+                order[src] = currentOrder;
+            }
         } else {
-            order[src] = order[src - 1] + 1;
-        }
 
-        for (Edge e: graph[src]) {
-            if (!visited.contains(e.dest)) {
-                pathsAugmentation(graph, ss, e.dest, visited,
-                        psf + e.dest, cache, order, prevOrder + 1);
+            if (order[src] == -1 ) {
+                currentOrder++;
+                order[src] = currentOrder;
+                // update the value of the k,
+                System.out.println(ssp);
             }
         }
+
+
+        for (Edge e: graph[src]) {
+
+            if (!visited.contains(e.dest)) {
+                pathsAugmentation(graph, ss, e.dest, visited,
+                        psf + e.dest, cache, order, currentOrder, ssp);
+            }
+        }
+
+        ssp.add(src);
+        k++;
         visited.remove(src);
     }
 
@@ -146,8 +159,9 @@ class Graph {
         HashSet<Integer> visited = new HashSet<>();
         ArrayList<String> cache = new ArrayList<>();
         int[] order = new int[g.vertices.size()];
+        Arrays.fill(order, -1);
         g.pathsAugmentation(g.graph, 0, 0,visited,  0 + "",
-                cache , order, 0);
+                cache , order, 0, new ArrayList<>());
 
         for (String p: cache) {
             System.out.println(p);
@@ -261,6 +275,7 @@ class Graph {
             }
             ArrayList<Object> objs = g.printPathAugmentation();
             int[] order = (int[]) objs.get(1);
+
             ArrayList<String> cache = (ArrayList<String>) objs.get(0);
             ArrayList<AugmentedPair> augmentedPairs =  g.generateAugmentedPairs(cache);
             System.out.println("Path labelling for One Way Street Problem ᧠. " +

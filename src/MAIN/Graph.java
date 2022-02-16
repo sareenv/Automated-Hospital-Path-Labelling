@@ -57,7 +57,6 @@ class Graph {
             this.vertices.add(srcToken);
             this.vertices.add(destToken);
         }
-
         snc.close();
 
         // Initialised the scanner again to get the valid input from the user.
@@ -79,20 +78,10 @@ class Graph {
     * */
 
     boolean isGraphConnected() {
-        ArrayList<Object> result = printPathAugmentation();
-        ArrayList<String> cachePath = (ArrayList<String>) result.get(0);
-        if (cachePath.size() == 0) { return false; }
+//        ArrayList<Object> result = printPathAugmentation();
+//        ArrayList<String> cachePath = (ArrayList<String>) result.get(0);
+//        if (cachePath.size() == 0) { return false; }
         return true;
-    }
-
-    /*
-    *  - Bridge Detection Algorithms for the graph.
-    *       - To detect if the bridge exist or not in the graph remove one
-    *           edge and check if the graph is still connected or not.
-    * */
-
-    public boolean bridgeDetector(ArrayList<Edge>[] graph) {
-        return false;
     }
 
 
@@ -102,52 +91,33 @@ class Graph {
         }
     }
 
-    static int k = 0;
-    // generates the hamiltonian path from the src vertex to the destination vertex.
-    public void pathsAugmentation(ArrayList<Edge>[] graph, int ss,
-                                  int src, HashSet<Integer> visited,
-                                  String psf,
-                                  ArrayList<String> cache,
-                                  int[] order, int currentOrder
-                                  , ArrayList<Integer> ssp) {
 
-        if (ssp.size() == this.graph.length - 1) {
-            System.out.println(Arrays.toString(order));
-            if (order[src] == - 1) {
-                order[src] = currentOrder + 1;
+    public static void pathHeuristicCost(ArrayList<Edge>[] graph,
+                                         int src, HashSet<Integer> visited,
+                                         ArrayList<Integer> ssp, HashMap<Integer, Integer> filledOrder) {
+        // base condition
+        if (ssp.size() == graph.length - 1) {
+
+            // get the values for the filled order.
+            int current_order = 1;
+            filledOrder.put(0, current_order);
+            for(int i = ssp.size() - 1; i != -1; i--) {
+                int val = current_order;
+                filledOrder.put(ssp.get(i),  val);
+                current_order++;
             }
-            cache.add(psf);
-            return;
+            return ;
         }
 
         visited.add(src);
-
-        if (src == 0) {
-            currentOrder = 1;
-            if (order[src] == -1 ) {
-                order[src] = currentOrder;
-            }
-        } else {
-
-            if (order[src] == -1 ) {
-                currentOrder++;
-                order[src] = currentOrder;
-                // update the value of the k,
-                System.out.println(ssp);
-            }
-        }
-
-
         for (Edge e: graph[src]) {
-
             if (!visited.contains(e.dest)) {
-                pathsAugmentation(graph, ss, e.dest, visited,
-                        psf + e.dest, cache, order, currentOrder, ssp);
+                pathHeuristicCost(graph, e.dest, visited, ssp, filledOrder);
             }
         }
-
-        ssp.add(src);
-        k++;
+        if (!ssp.contains(src)) {
+            ssp.add(src);
+        }
         visited.remove(src);
     }
 
@@ -157,58 +127,25 @@ class Graph {
         System.out.println("Augmenting the paths from the src node 0 " +
                 "to all the other paths in the graph.");
         HashSet<Integer> visited = new HashSet<>();
-        ArrayList<String> cache = new ArrayList<>();
-        int[] order = new int[g.vertices.size()];
-        Arrays.fill(order, -1);
-        g.pathsAugmentation(g.graph, 0, 0,visited,  0 + "",
-                cache , order, 0, new ArrayList<>());
+        HashMap<Integer, Integer> filledOrder = new HashMap<>();
+        ArrayList<Integer> ssp = new ArrayList<>();
+        // augment the graph in certain way.
 
-        for (String p: cache) {
-            System.out.println(p);
-        }
+        g.pathHeuristicCost(g.graph, 0, visited, ssp, filledOrder);
+        // generate augmented paths.
+
         ArrayList<Object> objs = new ArrayList<>();
-        objs.add(cache);
-        objs.add(order);
+        // this will ensure that we label one current path correctly.
+        objs.add(filledOrder);
         return objs;
     }
 
 
-    static class AugmentedPair {
-        char nodeA;
-        char nodeB;
-
-
-        public AugmentedPair(char nodeA, char nodeB) {
-            this.nodeA = nodeA;
-            this.nodeB = nodeB;
-        }
-
-
-        @Override
-        public String toString() {
-            return "AugmentedPair{" +
-                    "nodeA=" + nodeA +
-                    ", nodeB=" + nodeB +
-                    '}';
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            AugmentedPair pair = (AugmentedPair) o;
-            return nodeA == pair.nodeA && nodeB == pair.nodeB;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(nodeA, nodeB);
-        }
-    }
 
 
     // labelling Algorithm - Works based on the logic mentioned in the book.
-    public static void labellingLogic(ArrayList<AugmentedPair> uniquePairs, int[] order) {
+    public static void labellingLogic(ArrayList<AugmentedPair> uniquePairs,
+                                      HashMap<Integer, Integer> order) {
         ArrayList<AugmentedPair> visitedEdges = new ArrayList<>();
         HashSet<String> visitedVertices = new HashSet<>();
 
@@ -221,7 +158,11 @@ class Graph {
             int nodeAInt = Integer.parseInt(pair.nodeA + "");
             int nodeBInt = Integer.parseInt(pair.nodeB + "");
 
-            if(order[nodeAInt] < order[nodeBInt] &&
+            if (!order.containsKey(nodeBInt) || !order.containsKey(nodeAInt)) {
+                return;
+            }
+
+            if(order.get(nodeAInt) < order.get(nodeBInt) &&
                     !visitedVertices.contains(nodeBInt + "")) {
                 System.out.println(nodeAInt + " -> " + nodeBInt);
                 visitedEdges.add(pair);
@@ -229,7 +170,7 @@ class Graph {
                 visitedVertices.add(nodeAInt + "");
             }
 
-            else if (order[nodeAInt] < order[nodeBInt]
+            else if (order.get(nodeAInt) < order.get(nodeBInt)
                     && visitedVertices.contains(nodeBInt + "")) {
                 System.out.println(nodeBInt + " -> " + nodeAInt);
                 visitedEdges.add(pair);
@@ -239,8 +180,9 @@ class Graph {
     }
 
     // String processing utility
-    ArrayList<AugmentedPair> generateAugmentedPairs(ArrayList<String> cache) {
+    public static ArrayList<AugmentedPair> generateAugmentedPairs(ArrayList<String> cache) {
         ArrayList<AugmentedPair> uniquePairs = new ArrayList<>();
+
         for (String path: cache) {
             for (int i = 0; i < path.length() - 1; i++) {
                 char c1 = path.charAt(i);
@@ -251,6 +193,7 @@ class Graph {
                 }
             }
         }
+
         return uniquePairs;
     }
 
@@ -260,7 +203,7 @@ class Graph {
         int graphCount = snc.nextInt();
         System.out.println("Please enter the file number to load the data from ");
         int fileNumber = snc.nextInt();
-        snc.close();
+
         Graph g = new Graph(graphCount);
         try {
             g.loadContent(fileNumber);
@@ -273,18 +216,56 @@ class Graph {
                         "therefore cannot be labelled by algorithm for one way street problem");
                 return;
             }
-            ArrayList<Object> objs = g.printPathAugmentation();
-            int[] order = (int[]) objs.get(1);
 
-            ArrayList<String> cache = (ArrayList<String>) objs.get(0);
-            ArrayList<AugmentedPair> augmentedPairs =  g.generateAugmentedPairs(cache);
-            System.out.println("Path labelling for One Way Street Problem ᧠. " +
-                    "Mark the Labelling in the following fashion");
-            labellingLogic(augmentedPairs, order);
+            int src = 0;
+            HashSet<Integer> visited = new HashSet<>();
+            ArrayList<Integer> spss = new ArrayList<>();
+            HashMap<Integer, Integer> filledOrder = new HashMap<>();
+            pathHeuristicCost(g.graph, src, visited, spss, filledOrder);
+            System.out.println(filledOrder);
+            // ok so we have received the filledOrder.
+            // print the augmented path
+            System.out.println("Please enter the number of rooms in the facility ");
+            int n = snc.nextInt();
+            ArrayList<String> paths = new ArrayList<>();
+            System.out.println("Graph orientation");
+            augmentationPaths(g.graph, src, src + "" , visited, paths, n);
+            System.out.println(paths);
+            ArrayList<AugmentedPair> augmentedPairList = generateAugmentedPairs(paths);
+
+            for (AugmentedPair p: augmentedPairList) {
+                System.out.println("node a is " + p.nodeA + " and nodeB is " + p.nodeB);
+            }
+
         } catch (FileNotFoundException e) {
             System.out.println("File opening exception! Whoops check the " +
                     "text file containing the graph information is " +
                     "loaded properly into the program");
+        } finally {
+            snc.close();
         }
+    }
+
+    // print all the augmentation paths.
+    private static void augmentationPaths(ArrayList<Edge>[] graph,
+                  int src,
+                  String psf,
+                  HashSet<Integer> visited,
+                  ArrayList<String> cache, int k) {
+
+        if (visited.size() == k) {
+            cache.add(psf);
+            return;
+        }
+
+        // mark *
+        visited.add(src);
+
+        for (Edge e: graph[src]) {
+            if (!visited.contains(e.dest)) {
+                augmentationPaths(graph, e.dest, psf + e.dest, visited, cache, k);
+            }
+        }
+        visited.remove(src);
     }
 }

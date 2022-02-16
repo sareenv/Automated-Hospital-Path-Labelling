@@ -232,10 +232,13 @@ class Graph {
             augmentationPaths(g.graph, src, src + "" , visited, paths, n);
             System.out.println(paths);
             ArrayList<AugmentedPair> augmentedPairList = generateAugmentedPairs(paths);
-
+            HashSet<AugmentedPair> uniquePairs = new HashSet<>();
             for (AugmentedPair p: augmentedPairList) {
                 System.out.println("node a is " + p.nodeA + " and nodeB is " + p.nodeB);
+                uniquePairs.add(p);
             }
+            ArrayList<AugmentedPair> uniquePair = new ArrayList<>(uniquePairs);
+            labellingLogic(uniquePair, filledOrder);
 
         } catch (FileNotFoundException e) {
             System.out.println("File opening exception! Whoops check the " +

@@ -4,11 +4,11 @@ package MAIN;
 import java.util.Objects;
 
 class AugmentedPair {
-    char nodeA;
-    char nodeB;
+    Integer nodeA;
+    Integer nodeB;
 
 
-    public AugmentedPair(char nodeA, char nodeB) {
+    public AugmentedPair(Integer nodeA, Integer nodeB) {
         this.nodeA = nodeA;
         this.nodeB = nodeB;
     }

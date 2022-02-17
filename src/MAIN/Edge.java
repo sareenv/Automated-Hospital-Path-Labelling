@@ -1,7 +1,5 @@
 package MAIN;
 
-
-
 class Edge {
     int src;
     int dest;

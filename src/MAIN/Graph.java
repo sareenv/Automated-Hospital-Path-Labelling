@@ -11,6 +11,7 @@ class Graph {
 
     private HashSet<Integer> vertices;
     private ArrayList[] graph;
+    private int covidWard;
     public Graph(int vertexCount) {
         this.graph = new ArrayList[vertexCount];
         vertices = new HashSet<Integer>();
@@ -23,7 +24,7 @@ class Graph {
         Edge edge = new Edge(src, destination, type);
         this.graph[src].add(edge);
     }
-    public void loadContent(int fileNumber) throws FileNotFoundException {
+    public void loadContent(int fileNumber, boolean isSelected) throws FileNotFoundException {
         String path = "/Users/databunker/IdeaProjects/HospitalPathLabelling/src/MAIN";
         String fileName = "/Contents" + fileNumber + ".txt";
         System.out.println(fileName);
@@ -39,7 +40,8 @@ class Graph {
             this.vertices.add(destToken);
         }
         snc.close();
-        // Initialised the scanner again to get the valid input from the user.
+        // Initialised the scanner again to get
+        // the valid input from the user.
         snc = new Scanner(file);
         while (snc.hasNext()) {
             String input = snc.nextLine();
@@ -83,7 +85,8 @@ class Graph {
                                          int src,
                                          HashSet<Integer> visited,
                                          ArrayList<Integer> ssp,
-                                         HashMap<Integer, Integer> filledOrder) {
+                                         HashMap<Integer, Integer>
+                                                 filledOrder, boolean isCovidWard) {
         // base condition
         if (ssp.size() == graph.length - 1) {
             return;
@@ -91,8 +94,13 @@ class Graph {
 
         visited.add(src);
         for (Edge e: graph[src]) {
+            // ignore this in the orientation.
+            if (isCovidWard) {
+                isCovidWard = false;
+                continue;
+            }
             if (!visited.contains(e.dest)) {
-                pathHeuristicCost(graph, e.dest, visited, ssp, filledOrder);
+                pathHeuristicCost(graph, e.dest, visited, ssp, filledOrder, false);
             }
         }
         if (!ssp.contains(src)) {
@@ -105,9 +113,8 @@ class Graph {
     // labelling Algorithm - Works based on the logic mentioned in the book.
     public static void labellingLogic(ArrayList<AugmentedPair> uniquePairs,
                                       HashMap<Integer, Integer> order,
-                                      ArrayList<String> cachedPath,
-                                      boolean isCovidPathLabelling)  {
-
+                                      ArrayList<String> cachedPath)  {
+        System.out.println("Graph Labelling ....");
         ArrayList<AugmentedPair> visitedEdges = new ArrayList<>();
         HashSet<String> visitedVertices = new HashSet<>();
 
@@ -145,22 +152,6 @@ class Graph {
 
 
 
-    // String processing utility
-//    public static ArrayList<AugmentedPair> generateAugmentedPairs(ArrayList<Integer> cache) {
-//        ArrayList<AugmentedPair> uniquePairs = new ArrayList<>();
-//
-//        for (int i = 0; i < cache.size() - 1; i++) {
-//                int c1 = cache.get(i);
-//                int c2 = cache.get(i + 1);
-//                AugmentedPair pair = new AugmentedPair(c1, c2);
-//                if (!uniquePairs.contains(pair)) {
-//                    uniquePairs.add(pair);
-//                }
-//            }
-//
-//        return uniquePairs;
-//    }
-
     public static void main(String[] args) {
         System.out.println("Please enter the vertex count in the source file");
         Scanner snc = new Scanner(System.in);
@@ -184,11 +175,20 @@ class Graph {
             }
         }
 
+
+
+
+
         System.out.println("Covid ward is present: " + selectedOption);
 
         Graph g = new Graph(graphCount);
         try {
-            g.loadContent(fileNumber);
+
+            if (selectedOption) {
+                System.out.println("Please enter the room number of the covid ward");
+                g.covidWard = snc.nextInt();
+            }
+            g.loadContent(fileNumber, selectedOption);
             g.printGraph();
             // path augmentation shows that there
             // exist a path between src vertex
@@ -203,7 +203,7 @@ class Graph {
             HashSet<Integer> visited = new HashSet<>();
             ArrayList<Integer> spss = new ArrayList<>();
             HashMap<Integer, Integer> filledOrder = new HashMap<>();
-            pathHeuristicCost(g.graph, src, visited, spss, filledOrder);
+            pathHeuristicCost(g.graph, src, visited, spss, filledOrder, selectedOption);
 
             int current_order = 1;
             filledOrder.put(0, current_order);
@@ -213,13 +213,16 @@ class Graph {
                 current_order++;
             }
 
+            System.out.println("Filled order is " + filledOrder);
+
             // ok so we have received the filledOrder.
             // print the augmented path
             System.out.println("Please enter the number of rooms in the facility ");
             int n = snc.nextInt();
             ArrayList<String> paths = new ArrayList<>();
             System.out.println("Graph orientation");
-            augmentationPaths(g.graph, src, src + "~" , visited, paths, n);
+            augmentationPaths(g.graph, src, src + "~" , visited, paths, n, selectedOption,
+                    g.covidWard);
 
             ArrayList<AugmentedPair> augmentedPairs = new ArrayList<>();
 
@@ -246,10 +249,16 @@ class Graph {
                 }
             }
             ArrayList<String> cachedLabel = new ArrayList<>();
-            labellingLogic(augmentedPairs, filledOrder, cachedLabel
-                    , selectedOption);
+            if (selectedOption) {
+                System.out.println("Green Path .......");
+            }
+            labellingLogic(augmentedPairs, filledOrder, cachedLabel);
             labellingLogicTwoWay(g, cachedLabel);
-
+            if (selectedOption) {
+                System.out.println("Red Path .......");
+                System.out.println(g.covidWard + " -> " + src);
+                System.out.println(src + " -> " +  g.covidWard);
+            }
         } catch (FileNotFoundException e) {
             System.out.println("File opening exception! Whoops check the " +
                     "text file containing the graph information is " +
@@ -284,7 +293,9 @@ class Graph {
                   int src,
                   String psf,
                   HashSet<Integer> visited,
-                  ArrayList<String> cache, int k) {
+                  ArrayList<String> cache,
+                  int k, boolean isCovidWard,
+                  int covidWard) {
 
         if (visited.size() == k) {
             cache.add(psf);
@@ -295,8 +306,14 @@ class Graph {
         visited.add(src);
 
         for (Edge e: graph[src]) {
+            // ignore this in the orientation.
+            if (isCovidWard && e.dest == covidWard) {
+                continue;
+            }
+
             if (!visited.contains(e.dest)) {
-                augmentationPaths(graph, e.dest, psf + e.dest + "~", visited, cache, k);
+                augmentationPaths(graph, e.dest, psf + e.dest + "~",
+                        visited, cache, k, isCovidWard, covidWard);
             }
         }
         visited.remove(src);

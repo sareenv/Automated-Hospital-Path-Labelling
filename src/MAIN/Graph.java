@@ -3,11 +3,12 @@ package MAIN;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.OutputStream;
 import java.util.*;
 
 
 class Graph {
-    
+
     private HashSet<Integer> vertices;
     private ArrayList[] graph;
     public Graph(int vertexCount) {
@@ -18,8 +19,8 @@ class Graph {
         }
     }
     // creates the edges between the src and dest and adds to the graph G;
-    public void addEdge(int src, int destination) {
-        Edge edge = new Edge(src, destination);
+    public void addEdge(int src, int destination, String type) {
+        Edge edge = new Edge(src, destination, type);
         this.graph[src].add(edge);
     }
     public void loadContent(int fileNumber) throws FileNotFoundException {
@@ -45,12 +46,11 @@ class Graph {
             String[] tokens = input.split(",");
             int srcToken = Integer.parseInt(tokens[0]);
             int destToken = Integer.parseInt(tokens[1]);
-            this.addEdge(srcToken, destToken);
+            String type = tokens[2];
+            this.addEdge(srcToken, destToken, type);
         }
         snc.close();
     }
-
-
 
     /*
     * Is graph connected.
@@ -79,7 +79,6 @@ class Graph {
         }
     }
 
-
     public static void pathHeuristicCost(ArrayList<Edge>[] graph,
                                          int src,
                                          HashSet<Integer> visited,
@@ -105,9 +104,8 @@ class Graph {
 
     // labelling Algorithm - Works based on the logic mentioned in the book.
     public static void labellingLogic(ArrayList<AugmentedPair> uniquePairs,
-                                      HashMap<Integer, Integer> order) {
-
-        System.out.println("passed to labelling logic " + uniquePairs);
+                                      HashMap<Integer, Integer> order,
+                                      ArrayList<String> cachedPath)  {
 
         ArrayList<AugmentedPair> visitedEdges = new ArrayList<>();
         HashSet<String> visitedVertices = new HashSet<>();
@@ -128,6 +126,7 @@ class Graph {
             if(order.get(nodeAInt) < order.get(nodeBInt) &&
                     !visitedVertices.contains(nodeBInt + "")) {
                 System.out.println(nodeAInt + " -> " + nodeBInt);
+                cachedPath.add(nodeAInt + " -> " + nodeBInt);
                 visitedEdges.add(pair);
                 visitedVertices.add(nodeBInt + "");
                 visitedVertices.add(nodeAInt + "");
@@ -136,10 +135,10 @@ class Graph {
             else if (order.get(nodeAInt) < order.get(nodeBInt)
                     && visitedVertices.contains(nodeBInt + "")) {
                 System.out.println(nodeBInt + " -> " + nodeAInt);
+                cachedPath.add(nodeBInt + " -> " + nodeAInt);
                 visitedEdges.add(pair);
                 visitedVertices.add(nodeAInt + "");
             }
-
         }
     }
 
@@ -213,7 +212,6 @@ class Graph {
                     e[j] = processed;
                 }
                 System.out.println(Arrays.toString(e));
-
                 ArrayList<Integer> nums = new ArrayList<>();
 
                 for (String pe: e) {
@@ -228,8 +226,9 @@ class Graph {
                     }
                 }
             }
-
-            labellingLogic(augmentedPairs, filledOrder);
+            ArrayList<String> cachedLabel = new ArrayList<>();
+            labellingLogic(augmentedPairs, filledOrder, cachedLabel);
+            labellingLogicTwoWay(g, cachedLabel);
 
         } catch (FileNotFoundException e) {
             System.out.println("File opening exception! Whoops check the " +
@@ -240,6 +239,26 @@ class Graph {
         }
     }
 
+    private static void labellingLogicTwoWay(Graph g, ArrayList<String> cachedLabel) {
+        for (String p: cachedLabel) {
+            String r1 = p.replace(" ", "");
+            String r2 = r1.replace(",", "");
+            String r3 = r2.replace("[", "");
+            String r4 = r3.replace("]", "");
+            String[] tokens = r4.split("->");
+            for (ArrayList<Edge> edges: g.graph) {
+                for (Edge e: edges) {
+                    if (e.src == Integer.parseInt(tokens[0])
+                            && e.dest == Integer.parseInt(tokens[1])) {
+                        if (e.type.equals("2W")) {
+                            System.out.println(tokens[1] + " -> " + tokens[0]);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     // print all the augmentation paths.
     private static void augmentationPaths(ArrayList<Edge>[] graph,
                   int src,
@@ -247,7 +266,6 @@ class Graph {
                   HashSet<Integer> visited,
                   ArrayList<String> cache, int k) {
 
-        System.out.println("victoria is " + visited.size());
         if (visited.size() == k) {
             cache.add(psf);
             return;

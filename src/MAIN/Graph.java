@@ -105,7 +105,8 @@ class Graph {
     // labelling Algorithm - Works based on the logic mentioned in the book.
     public static void labellingLogic(ArrayList<AugmentedPair> uniquePairs,
                                       HashMap<Integer, Integer> order,
-                                      ArrayList<String> cachedPath)  {
+                                      ArrayList<String> cachedPath,
+                                      boolean isCovidPathLabelling)  {
 
         ArrayList<AugmentedPair> visitedEdges = new ArrayList<>();
         HashSet<String> visitedVertices = new HashSet<>();
@@ -145,20 +146,20 @@ class Graph {
 
 
     // String processing utility
-    public static ArrayList<AugmentedPair> generateAugmentedPairs(ArrayList<Integer> cache) {
-        ArrayList<AugmentedPair> uniquePairs = new ArrayList<>();
-
-        for (int i = 0; i < cache.size() - 1; i++) {
-                int c1 = cache.get(i);
-                int c2 = cache.get(i + 1);
-                AugmentedPair pair = new AugmentedPair(c1, c2);
-                if (!uniquePairs.contains(pair)) {
-                    uniquePairs.add(pair);
-                }
-            }
-
-        return uniquePairs;
-    }
+//    public static ArrayList<AugmentedPair> generateAugmentedPairs(ArrayList<Integer> cache) {
+//        ArrayList<AugmentedPair> uniquePairs = new ArrayList<>();
+//
+//        for (int i = 0; i < cache.size() - 1; i++) {
+//                int c1 = cache.get(i);
+//                int c2 = cache.get(i + 1);
+//                AugmentedPair pair = new AugmentedPair(c1, c2);
+//                if (!uniquePairs.contains(pair)) {
+//                    uniquePairs.add(pair);
+//                }
+//            }
+//
+//        return uniquePairs;
+//    }
 
     public static void main(String[] args) {
         System.out.println("Please enter the vertex count in the source file");
@@ -166,6 +167,24 @@ class Graph {
         int graphCount = snc.nextInt();
         System.out.println("Please enter the file number to load the data from ");
         int fileNumber = snc.nextInt();
+
+        boolean isValidInput = false;
+        // IS Covid ward available in the building ......
+        boolean selectedOption = false;
+        System.out.println("Please enter if the covid wards are present in the building Y/N : ");
+
+        while (!isValidInput) {
+            String result = snc.next();
+            if (result.equals("Y") || result.equals("y") || result.equals("n")
+                    || result.equals("N")) {
+                selectedOption = result.equals("y") || result.equals("Y");
+                isValidInput = true;
+            } else {
+                System.out.println("Invalid option selected! Please re-enter the selection");
+            }
+        }
+
+        System.out.println("Covid ward is present: " + selectedOption);
 
         Graph g = new Graph(graphCount);
         try {
@@ -227,7 +246,8 @@ class Graph {
                 }
             }
             ArrayList<String> cachedLabel = new ArrayList<>();
-            labellingLogic(augmentedPairs, filledOrder, cachedLabel);
+            labellingLogic(augmentedPairs, filledOrder, cachedLabel
+                    , selectedOption);
             labellingLogicTwoWay(g, cachedLabel);
 
         } catch (FileNotFoundException e) {

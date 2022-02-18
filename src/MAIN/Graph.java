@@ -19,6 +19,13 @@ class Graph {
             this.graph[i] = new ArrayList();
         }
     }
+
+
+    public void addEdge(int src, int destination) {
+        Edge edge = new Edge(src, destination);
+        this.graph[src].add(edge);
+    }
+
     // creates the edges between the src and dest and adds to the graph G;
     public void addEdge(int src, int destination, String type) {
         Edge edge = new Edge(src, destination, type);
@@ -40,16 +47,19 @@ class Graph {
             this.vertices.add(destToken);
         }
         snc.close();
-        // Initialised the scanner again to get
-        // the valid input from the user.
         snc = new Scanner(file);
         while (snc.hasNext()) {
             String input = snc.nextLine();
             String[] tokens = input.split(",");
             int srcToken = Integer.parseInt(tokens[0]);
             int destToken = Integer.parseInt(tokens[1]);
-            String type = tokens[2];
-            this.addEdge(srcToken, destToken, type);
+            if (tokens.length == 3) {
+                String type = tokens[2];
+                this.addEdge(srcToken, destToken, type);
+            } else {
+                this.addEdge(srcToken, destToken);
+            }
+
         }
         snc.close();
     }
@@ -133,7 +143,9 @@ class Graph {
 
             if(order.get(nodeAInt) < order.get(nodeBInt) &&
                     !visitedVertices.contains(nodeBInt + "")) {
-                System.out.println(nodeAInt + " -> " + nodeBInt);
+                String result = nodeAInt + " -> " + nodeBInt;
+                result = result.replaceAll(".{100}", "$0\n");
+                System.out.println(result);
                 cachedPath.add(nodeAInt + " -> " + nodeBInt);
                 visitedEdges.add(pair);
                 visitedVertices.add(nodeBInt + "");
@@ -142,7 +154,9 @@ class Graph {
 
             else if (order.get(nodeAInt) < order.get(nodeBInt)
                     && visitedVertices.contains(nodeBInt + "")) {
-                System.out.println(nodeBInt + " -> " + nodeAInt);
+                String result1 = nodeBInt + " -> " + nodeAInt;
+                result1 = result1.replaceAll(".{100}", "$0\n");
+                System.out.println(result1);
                 cachedPath.add(nodeBInt + " -> " + nodeAInt);
                 visitedEdges.add(pair);
                 visitedVertices.add(nodeAInt + "");
@@ -212,15 +226,16 @@ class Graph {
                 filledOrder.put(spss.get(i),  val);
                 current_order++;
             }
-
-            System.out.println("Filled order is " + filledOrder);
+            String orderResult = filledOrder.toString();
+            orderResult = orderResult.replaceAll(".{100}", "$0\n");
+            System.out.println("Filled order is " + orderResult);
 
             // ok so we have received the filledOrder.
             // print the augmented path
             System.out.println("Please enter the number of rooms in the facility ");
             int n = snc.nextInt();
             ArrayList<String> paths = new ArrayList<>();
-            System.out.println("Graph orientation");
+            System.out.println("Graph Augmentation");
             augmentationPaths(g.graph, src, src + "~" , visited, paths, n, selectedOption,
                     g.covidWard);
 
@@ -269,29 +284,32 @@ class Graph {
     }
 
     private static void labellingLogicTwoWay(Graph g, ArrayList<String> cachedLabel) {
-        for (String p: cachedLabel) {
-            String r1 = p.replace(" ", "");
-            String r2 = r1.replace(",", "");
-            String r3 = r2.replace("[", "");
-            String r4 = r3.replace("]", "");
-            String[] tokens = r4.split("->");
-            for (ArrayList<Edge> edges: g.graph) {
-                for (Edge e: edges) {
-                    if (e.src == Integer.parseInt(tokens[0])
-                            && e.dest == Integer.parseInt(tokens[1])) {
-                        if (e.type.equals("2W")) {
-                            System.out.println(tokens[1] + " -> " + tokens[0]);
+        try {
+            for (String p: cachedLabel) {
+                String r1 = p.replace(" ", "");
+                String r2 = r1.replace(",", "");
+                String r3 = r2.replace("[", "");
+                String r4 = r3.replace("]", "");
+                String[] tokens = r4.split("->");
+                for (ArrayList<Edge> edges: g.graph) {
+                    for (Edge e: edges) {
+                        if (e == null) { return; }
+                        if (e.src == Integer.parseInt(tokens[0])
+                                && e.dest == Integer.parseInt(tokens[1])) {
+                            if (e.type.equals("2W")) {
+                                System.out.println(tokens[1] + " -> " + tokens[0]);
+                            }
                         }
                     }
                 }
             }
+        } catch (Exception e) {
+            System.out.println();
         }
+
     }
 
-    // print all the augmentation paths.
-    private static void augmentationPaths(ArrayList<Edge>[] graph,
-                  int src,
-                  String psf,
+    private static void augmentationPaths(ArrayList<Edge>[] graph, int src, String psf,
                   HashSet<Integer> visited,
                   ArrayList<String> cache,
                   int k, boolean isCovidWard,

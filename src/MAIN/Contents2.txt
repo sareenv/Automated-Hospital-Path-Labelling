@@ -1,4 +1,0 @@
-0,1,East,[Washroom1,Exam1,Exam2,Exam3,Lab1,DrOffice1,Exam4]
-1,2,North,[DrugCloset,Exam5,Washroom2,Exam6]
-2,3,West,[Kitchen,DrOffice2,EmptyRoom]
-3,0,South,[FurnitureRoom,PassThrough,MainEntrance_Exit]

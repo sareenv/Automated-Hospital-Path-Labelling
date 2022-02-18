@@ -1,8 +1,0 @@
-0,1,[Washroom1,Exam1,Exam2,Exam3,Lab1,DrOffice1,Exam4]
-1,0,[Washroom1,Exam1,Exam2,Exam3,Lab1,DrOffice1,Exam4,MainEntrance_Exit]
-1,2,[DrugCloset,Exam5,Washroom2,Exam6]
-2,1,[DrugCloset,Exam5,Washroom2,Exam6]
-2,3,[Kitchen,DrOffice2,EmptyRoom]
-3,2,[Kitchen,DrOffice2,EmptyRoom]
-3,0,[FurnitureRoom,PassThrough,MainEntrance_Exit]
-0,3,[FurnitureRoom,PassThrough]
